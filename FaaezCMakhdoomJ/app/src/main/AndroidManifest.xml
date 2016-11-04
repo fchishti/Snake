@@ -9,7 +9,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity"/>
-        <activity android:name=".GameActivity" />
+        <activity android:name=".GameActivity"
+            android:theme="@style/GameTheme"
+            android:screenOrientation="landscape"/>
         <activity android:name=".OptionActivity" />
         <activity android:name=".ScoreActivity" />
         <activity android:name=".SplashActivity"
