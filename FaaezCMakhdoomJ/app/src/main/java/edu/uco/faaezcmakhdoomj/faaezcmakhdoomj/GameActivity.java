@@ -2,6 +2,7 @@ package edu.uco.faaezcmakhdoomj.faaezcmakhdoomj;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -20,7 +21,9 @@ import android.widget.TextView;
 import java.util.LinkedList;
 import java.util.Random;
 
-public class GameActivity extends Activity {
+import edu.uco.faaezcmakhdoomj.faaezcmakhdoomj.EndGameDialogFragment.EndGameDialogListener;
+
+public class GameActivity extends Activity implements EndGameDialogListener{
 
     ImageButton topLeft, up, topRight, bottomLeft, down, bottomRight;
     TextView scoreField;
@@ -29,13 +32,16 @@ public class GameActivity extends Activity {
     private int direction = Direction.NO_DIRECTION;
     private int score = 0;
 
+    BubbleView bubbleView;
+    RelativeLayout relativeLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.gameView);
-        final BubbleView bubbleView = new BubbleView(getApplicationContext());
+        relativeLayout = (RelativeLayout) findViewById(R.id.gameView);
+        bubbleView = new BubbleView(getApplicationContext());
 
         relativeLayout.addView(bubbleView);
 
@@ -97,6 +103,43 @@ public class GameActivity extends Activity {
         });
     }
 
+    public void openDialog(int score){
+        EndGameDialogFragment d = new EndGameDialogFragment();
+
+        Bundle bundle = new Bundle();
+        bundle.putInt("index", score);
+
+        d.setArguments(bundle);
+        d.show(getFragmentManager(), "Game Over!");
+    }
+
+    @Override
+    public void onEndGameDialogPositiveClick() {
+        relativeLayout.removeView(bubbleView);
+        bubbleView = new BubbleView(getApplicationContext());
+        relativeLayout.addView(bubbleView);
+    }
+
+    @Override
+    public void onEndGameDialogNegativeClick(){
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        finish();
+        startActivity(intent);
+    }
+
+    private void UpdateScore(int score){
+
+        final int _score = score;
+
+        this.runOnUiThread(
+                new Runnable() {
+                    public void run() {
+                        scoreField.setText("Score : "+ _score);
+                    }
+                }
+        );
+    }
+
     private class BubbleView extends SurfaceView implements
             SurfaceHolder.Callback {
 
@@ -125,8 +168,6 @@ public class GameActivity extends Activity {
         public BubbleView(Context context) {
             super(context);
 
-            // general info about the display; size, density, font scaling, etc
-            // the screen size, not canvas size
             mDisplay = new DisplayMetrics();
             GameActivity.this.getWindowManager().getDefaultDisplay()
                     .getMetrics(mDisplay);
@@ -208,7 +249,30 @@ public class GameActivity extends Activity {
             if(snakeRect.intersect(pointRect)){
                 newPoint = true;
                 score += 1;
+                Point last = snake.getLast();
+                for(int i = 0; i < 5; i++) {
+                    snake.add(new Point(last.x, last.y));
+                }
             }
+
+            int counter = 0;
+            for(Point p : snake){
+                if(counter != 0){
+                    Rect bodyRect = new Rect(p.x, p.y, p.x+50, p.y +50);
+                    if(snakeRect.left == bodyRect.left &&
+                            snakeRect.top == bodyRect.top &&
+                            snakeRect.right == bodyRect.right &&
+                            snakeRect.bottom == bodyRect.bottom){
+                        gameOver();
+                    }
+                }
+                counter++;
+            }
+        }
+
+        private void gameOver(){
+            mDrawingThread.interrupt();
+            openDialog(score);
         }
 
         @Override
@@ -236,6 +300,7 @@ public class GameActivity extends Activity {
                             //Log.d(TAG, elapsedTime+"");
                             moveStep = (int) (elapsedTime / 5) + 5;
                             detectCollision();
+                            UpdateScore(score);
                             move();
                             drawBubble(canvas);
                             previousFrameTime = currentTime;
@@ -253,12 +318,14 @@ public class GameActivity extends Activity {
                 mDrawingThread.interrupt();
         }
 
+
+
         public void GenerateDefaultSnake()
         {
             snake.clear();
             score = 0;
             int counter = 0;
-            for(int i =0; i < 50; i++){
+            for(int i = 0; i < 50; i++){
                 snake.add(new Point(mX+counter,mY));
                 counter += 10; //Always equal to speed
             }
