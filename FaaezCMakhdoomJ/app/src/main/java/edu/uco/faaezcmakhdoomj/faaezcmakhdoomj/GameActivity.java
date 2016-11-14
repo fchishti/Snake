@@ -17,30 +17,37 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.Random;
 
 import edu.uco.faaezcmakhdoomj.faaezcmakhdoomj.EndGameDialogFragment.EndGameDialogListener;
 
-public class GameActivity extends Activity implements EndGameDialogListener{
+public class GameActivity extends Activity implements EndGameDialogListener, NameDialogFragment.NameDialogListener{
 
     ImageButton topLeft, up, topRight, bottomLeft, down, bottomRight;
     TextView scoreField;
 
+    BubbleView bubbleView;
+    RelativeLayout relativeLayout;
+
     private LinkedList<Point> snake;
     private int direction = Direction.NO_DIRECTION;
     private int score = 0;
+    private String name = null;
 
-    BubbleView bubbleView;
-    RelativeLayout relativeLayout;
+    DatabaseHelper myDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
+        myDb = new DatabaseHelper(this);
+
         relativeLayout = (RelativeLayout) findViewById(R.id.gameView);
+        openNameDialog();
         bubbleView = new BubbleView(getApplicationContext());
 
         relativeLayout.addView(bubbleView);
@@ -103,6 +110,22 @@ public class GameActivity extends Activity implements EndGameDialogListener{
         });
     }
 
+    public void openNameDialog(){
+        NameDialogFragment d = new NameDialogFragment();
+        d.show(getFragmentManager(), "Name");
+    }
+
+    @Override
+    public void onNameDialogPositiveClick(String _name){
+        this.name = _name;
+        if(name.equals("")){
+            Toast.makeText(this,"Please enter a name",Toast.LENGTH_SHORT).show();
+            openNameDialog();
+        } else {
+            Toast.makeText(this,name,Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public void openDialog(int score){
         EndGameDialogFragment d = new EndGameDialogFragment();
 
@@ -115,6 +138,7 @@ public class GameActivity extends Activity implements EndGameDialogListener{
 
     @Override
     public void onEndGameDialogPositiveClick() {
+        AddData();
         relativeLayout.removeView(bubbleView);
         bubbleView = new BubbleView(getApplicationContext());
         relativeLayout.addView(bubbleView);
@@ -122,6 +146,7 @@ public class GameActivity extends Activity implements EndGameDialogListener{
 
     @Override
     public void onEndGameDialogNegativeClick(){
+        AddData();
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         finish();
         startActivity(intent);
@@ -140,6 +165,14 @@ public class GameActivity extends Activity implements EndGameDialogListener{
         );
     }
 
+    private  void AddData() {
+        boolean isInserted = myDb.insertData(name, ""+score);
+        if(isInserted == true)
+            Log.d("DB","insterted");
+        else
+            Log.d("DB","not insterted");
+    }
+
     private class BubbleView extends SurfaceView implements
             SurfaceHolder.Callback {
 
@@ -152,8 +185,6 @@ public class GameActivity extends Activity implements EndGameDialogListener{
 
         private int moveStep = 2;
 
-//      private int direction = 1; // +1 for +Y, -1 for -Y
-
         private final int BOX_HEIGHT = 50;
         private final int BOX_WIDTH = 50;
         private final int GRID_WIDTH = 25;
@@ -162,7 +193,6 @@ public class GameActivity extends Activity implements EndGameDialogListener{
 
         private Point point = new Point();
         private boolean newPoint = true;
-
 
 
         public BubbleView(Context context) {
@@ -317,8 +347,6 @@ public class GameActivity extends Activity implements EndGameDialogListener{
             if (null != mDrawingThread)
                 mDrawingThread.interrupt();
         }
-
-
 
         public void GenerateDefaultSnake()
         {
