@@ -11,10 +11,34 @@
     tools:context="edu.uco.faaezcmakhdoomj.faaezcmakhdoomj.OptionActivity">
 
     <TextView
+        android:id="@+id/optionHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Options"
         android:textAlignment="center"
         android:textSize="30sp"
         />
+    <TextView
+        android:layout_below="@id/optionHeader"
+        android:id="@+id/speedtext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Speed:"
+        android:layout_marginTop="20dp"/>
+    <SeekBar
+        android:layout_toRightOf="@id/speedtext"
+        android:id="@+id/speedseekbar"
+        android:layout_below="@id/optionHeader"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:progress="20"
+        android:secondaryProgress="20" />
+
+    <CheckBox
+        android:id="@+id/autospeedradio"
+        android:layout_below="@id/speedseekbar"
+        android:text="Auto speed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 </RelativeLayout>

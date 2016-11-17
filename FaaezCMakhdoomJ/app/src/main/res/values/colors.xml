@@ -4,4 +4,6 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="logoGreen">#48522e</color>
+    <color name="lightgreen">#339933</color>
+    <color name="Darkgreen">#0d753a</color>
 </resources>

@@ -3,12 +3,17 @@ package edu.uco.faaezcmakhdoomj.faaezcmakhdoomj;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Shader;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -54,8 +59,8 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
 
         topLeft = (ImageButton) findViewById(R.id.topLeft);
         up = (ImageButton) findViewById(R.id.topMiddle);
-        topRight = (ImageButton) findViewById(R.id.topRight);
-        bottomLeft = (ImageButton) findViewById(R.id.bottomLeft);
+        //topRight = (ImageButton) findViewById(R.id.topRight);
+        //bottomLeft = (ImageButton) findViewById(R.id.bottomLeft);
         down = (ImageButton) findViewById(R.id.bottomMiddle);
         bottomRight = (ImageButton) findViewById(R.id.bottomRight);
 
@@ -69,13 +74,13 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
             }
         });
 
-        topRight.setOnClickListener(new View.OnClickListener(){
+      /*  topRight.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
                 if (direction != Direction.WEST)
                     direction = Direction.EAST;
             }
-        });
+        }); */
 
         up.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -85,13 +90,13 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
             }
         });
 
-        bottomLeft.setOnClickListener(new View.OnClickListener(){
+       /* bottomLeft.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
                 if (direction != Direction.EAST)
                     direction = Direction.WEST;
             }
-        });
+        }); */
 
         down.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -181,6 +186,7 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
         private int canvasWidth, canvasHeight;
         private final SurfaceHolder mSurfaceHolder;
         private final Paint mPainter = new Paint();
+        private final Paint mBackgroungPainter = new Paint();
         private Thread mDrawingThread;
 
         private int moveStep = 2;
@@ -194,6 +200,17 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
         private Point point = new Point();
         private boolean newPoint = true;
 
+        Bitmap cherry = BitmapFactory.decodeResource(getResources(), R.mipmap.cherry);
+        Bitmap headWest = BitmapFactory.decodeResource(getResources(), R.mipmap.headwest);
+        Bitmap headEast = BitmapFactory.decodeResource(getResources(), R.mipmap.headeast);
+        Bitmap headNorth = BitmapFactory.decodeResource(getResources(), R.mipmap.headnorth);
+        Bitmap headSouth = BitmapFactory.decodeResource(getResources(), R.mipmap.headsouth);
+        Bitmap tailWest = BitmapFactory.decodeResource(getResources(), R.mipmap.tailwest);
+        Bitmap tailEast = BitmapFactory.decodeResource(getResources(), R.mipmap.taileast);
+        Bitmap tailNorth = BitmapFactory.decodeResource(getResources(), R.mipmap.tailnorth);
+        Bitmap tailSouth = BitmapFactory.decodeResource(getResources(), R.mipmap.tailsouth);
+        Bitmap bodyHorizontal = BitmapFactory.decodeResource(getResources(), R.mipmap.bodyhorizontal);
+        Bitmap bodyVertical = BitmapFactory.decodeResource(getResources(), R.mipmap.bodyvertical);
 
         public BubbleView(Context context) {
             super(context);
@@ -216,12 +233,56 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
         }
 
         private void drawBubble(Canvas canvas) {
-            canvas.drawColor(Color.DKGRAY);
+            //canvas.drawColor(Color.DKGRAY);
+            //mPainter.setStyle(Paint.Style.FILL);
+            //Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.grass_tiled);
+            //canvas.drawBitmap(bmp,0,0,null);
+            //mPainter.setShader(new BitmapShader(bmp, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
+           //----- canvas.drawColor(ContextCompat.getColor(getContext(), R.color.back_green));
+            //canvas.drawPaint(mPainter);
+
+            mBackgroungPainter.setShader(new LinearGradient(0,0,0,getHeight(), ContextCompat.getColor(getContext(), R.color.lightgreen)
+                    ,ContextCompat.getColor(getContext(), R.color.Darkgreen), Shader.TileMode.CLAMP));
+
+            canvas.drawPaint(mBackgroungPainter);
+
             mPainter.setColor(Color.YELLOW);
+
+            int snakecounter = 1;
+
+            if(direction == Direction.EAST){
+                canvas.drawBitmap(Bitmap.createScaledBitmap(headEast, 50, 50, false),snake.getFirst().x,snake.getFirst().y,null);
+            } else if (direction == Direction.WEST){
+                canvas.drawBitmap(Bitmap.createScaledBitmap(headWest, 50, 50, false),snake.getFirst().x,snake.getFirst().y,null);
+            } else if (direction == Direction.SOUTH){
+                canvas.drawBitmap(Bitmap.createScaledBitmap(headSouth, 50, 50, false),snake.getFirst().x,snake.getFirst().y,null);
+            } else if (direction == Direction.NORTH){
+                canvas.drawBitmap(Bitmap.createScaledBitmap(headNorth, 50, 50, false),snake.getFirst().x,snake.getFirst().y,null);
+            }
 
             for (Point p : snake)
             {
-                canvas.drawRect(p.x , p.y , p.x + BOX_WIDTH, p.y + BOX_HEIGHT,mPainter);
+                if(direction == Direction.EAST || direction == Direction.WEST){
+                    if(snakecounter != 1 && snakecounter != snake.size()) {
+                        //canvas.drawRect(p.x, p.y, p.x + BOX_WIDTH, p.y + BOX_HEIGHT, mPainter);
+                        canvas.drawBitmap(Bitmap.createScaledBitmap(bodyHorizontal, 50, 50, false), p.x, p.y, null);
+                    }
+                } else {
+                    if(snakecounter != 1 && snakecounter != snake.size()) {
+                        canvas.drawBitmap(Bitmap.createScaledBitmap(bodyVertical, 50, 50, false), p.x, p.y, null);
+                    }
+                }
+                snakecounter++;
+            }
+
+            if(direction == Direction.EAST){
+                canvas.drawBitmap(Bitmap.createScaledBitmap(tailEast, 50, 50, false),snake.getLast().x,snake.getLast().y,null);
+            } else if (direction == Direction.WEST){
+                canvas.drawBitmap(Bitmap.createScaledBitmap(tailWest, 50, 50, false),snake.getLast().x,snake.getLast().y,null);
+            } else if (direction == Direction.SOUTH){
+                canvas.drawBitmap(Bitmap.createScaledBitmap(tailSouth, 50, 50, false),snake.getLast().x,snake.getLast().y,null);
+            } else if (direction == Direction.NORTH){
+                canvas.drawBitmap(Bitmap.createScaledBitmap(tailNorth, 50, 50, false),snake.getLast().x,snake.getLast().y,null);
             }
 
             if(newPoint){
@@ -231,7 +292,8 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
                 newPoint = false;
             }
             mPainter.setColor(Color.RED);
-            canvas.drawRect(point.x,point.y,point.x+50,point.y+50,mPainter);
+            //canvas.drawRect(point.x,point.y,point.x+50,point.y+50,mPainter);
+            canvas.drawBitmap(Bitmap.createScaledBitmap(cherry, 50, 50, false),point.x,point.y,null);
         }
 
         private void move() {
