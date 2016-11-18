@@ -36,9 +36,17 @@
         android:secondaryProgress="20" />
 
     <CheckBox
-        android:id="@+id/autospeedradio"
+        android:id="@+id/autospeedcheck"
         android:layout_below="@id/speedseekbar"
         android:text="Auto speed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
+
+    <CheckBox
+        android:id="@+id/wallscheck"
+        android:layout_below="@id/autospeedcheck"
+        android:text="Walls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
 </RelativeLayout>

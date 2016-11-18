@@ -18,6 +18,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_2 = "NAME";
     public static final String COL_3 = "SCORE";
 
+    public static final String CONFIG_TABLE = "config_table";
+    public static final String CONFIG_COL_1 = "SPEED";
+    public static final String CONFIG_COL_2 = "AUTO";
+    public static final String CONFIG_COL_3 = "WALLS";
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
     }
@@ -25,11 +30,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table " + TABLE_NAME +" (ID INTEGER PRIMARY KEY AUTOINCREMENT, NAME TEXT, SCORE INTEGER)");
+        db.execSQL("create table " + CONFIG_TABLE +" (SPEED INTEGER, AUTO INTEGER, WALLS INTEGER)");
+        db.execSQL("insert into " + CONFIG_TABLE +" (SPEED, AUTO, WALLS) VALUES (10, 0, 0)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS "+TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS "+CONFIG_TABLE);
         onCreate(db);
     }
 
@@ -48,6 +56,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public Cursor getAllData() {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor res = db.rawQuery("select * from "+TABLE_NAME+" order by score desc",null);
+        return res;
+    }
+
+    public boolean insertConfigData(int speed, boolean autoSpeed, boolean walls) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM "+CONFIG_TABLE);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(CONFIG_COL_1,speed);
+        contentValues.put(CONFIG_COL_2,autoSpeed);
+        contentValues.put(CONFIG_COL_3,walls);
+        long result = db.insert(CONFIG_TABLE,null ,contentValues);
+        if(result == -1)
+            return false;
+        else
+            return true;
+    }
+
+    public Cursor getConfigData() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor res = db.rawQuery("select * from "+CONFIG_TABLE,null);
         return res;
     }
 }
