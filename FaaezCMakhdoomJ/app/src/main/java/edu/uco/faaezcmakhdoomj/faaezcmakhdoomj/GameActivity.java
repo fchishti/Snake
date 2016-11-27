@@ -33,7 +33,7 @@ import edu.uco.faaezcmakhdoomj.faaezcmakhdoomj.EndGameDialogFragment.EndGameDial
 public class GameActivity extends Activity implements EndGameDialogListener, NameDialogFragment.NameDialogListener{
 
     DatabaseHelper myDb;
-    ImageButton topLeft, up, topRight, bottomLeft, down, bottomRight;
+    ImageButton topLeft, up, topRight, bottomLeft, down, bottomRight, pause;
     TextView scoreField;
     BubbleView bubbleView;
     RelativeLayout relativeLayout;
@@ -44,7 +44,7 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
     private int score = 0;
     private String name = null;
     public int speed = 10;
-    public boolean autoSpeed = false, walls = false;
+    public boolean autoSpeed = false, walls = false, pauseGame = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +71,7 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
         up = (ImageButton) findViewById(R.id.topMiddle);
         down = (ImageButton) findViewById(R.id.bottomMiddle);
         bottomRight = (ImageButton) findViewById(R.id.bottomRight);
+        pause = (ImageButton) findViewById(R.id.btnpause);
 
         scoreField = (TextView) findViewById(R.id.score);
 
@@ -105,6 +106,18 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
             public void onClick(View v){
                 if (direction != Direction.WEST)
                     direction = Direction.EAST;
+            }
+        });
+
+        pause.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+            if (pauseGame){
+                pauseGame = false;
+            }
+            else{
+                pauseGame = true;
+            }
             }
         });
     }
@@ -196,11 +209,15 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
         private int mX, mY;
 
         private Point point = new Point();
+        private Point bonusPoint = new Point();
         private boolean newPoint = true;
+        private boolean newBonusPoint = true;
 
         private int speedCounter = 1;
+        private int bonusCounter = 0;
 
         private Bitmap cherry = BitmapFactory.decodeResource(getResources(), R.mipmap.cherry);
+        private Bitmap diamond = BitmapFactory.decodeResource(getResources(), R.mipmap.diamond);
         private Bitmap headWest = BitmapFactory.decodeResource(getResources(), R.mipmap.headwest);
         private Bitmap headEast = BitmapFactory.decodeResource(getResources(), R.mipmap.headeast);
         private Bitmap headNorth = BitmapFactory.decodeResource(getResources(), R.mipmap.headnorth);
@@ -248,7 +265,11 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
 
             canvas.drawPaint(mBackgroungPainter);
             drawSnake(canvas);
-            drawPoint(canvas);
+            if(bonusCounter == 5){
+                drawBonus(canvas);
+            } else {
+                drawPoint(canvas);
+            }
             if(walls == true){
                 drawWalls(canvas);
             }
@@ -261,52 +282,6 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
              for(Point p: snake){
                  canvas.drawRect(p.x, p.y, p.x + BOX_WIDTH, p.y + BOX_HEIGHT, mPainter);
              }
-            /*int snakecounter = 1;
-
-             if(direction == Direction.EAST){
-                 canvas.drawBitmap(Bitmap.createScaledBitmap(headEast, 50, 50, false),
-                         snake.getFirst().x,snake.getFirst().y,null);
-             } else if (direction == Direction.WEST){
-                 canvas.drawBitmap(Bitmap.createScaledBitmap(headWest, 50, 50, false),
-                         snake.getFirst().x,snake.getFirst().y,null);
-             } else if (direction == Direction.SOUTH){
-                 canvas.drawBitmap(Bitmap.createScaledBitmap(headSouth, 50, 50, false),
-                         snake.getFirst().x,snake.getFirst().y,null);
-             } else if (direction == Direction.NORTH){
-                 canvas.drawBitmap(Bitmap.createScaledBitmap(headNorth, 50, 50, false),
-                         snake.getFirst().x,snake.getFirst().y,null);
-             }
-
-             for (Point p : snake)
-             {
-                 if(direction == Direction.EAST || direction == Direction.WEST){
-                     if(snakecounter != 1 && snakecounter != snake.size()) {
-                         //canvas.drawRect(p.x, p.y, p.x + BOX_WIDTH, p.y + BOX_HEIGHT, mPainter);
-                         canvas.drawBitmap(Bitmap.createScaledBitmap(bodyHorizontal, 50, 50, false),
-                                 p.x, p.y, null);
-                     }
-                 } else {
-                     if(snakecounter != 1 && snakecounter != snake.size()) {
-                         canvas.drawBitmap(Bitmap.createScaledBitmap(bodyVertical, 50, 50, false),
-                                 p.x, p.y, null);
-                     }
-                 }
-                 snakecounter++;
-             }
-
-             if(direction == Direction.EAST){
-                 canvas.drawBitmap(Bitmap.createScaledBitmap(tailEast, 50, 50, false),
-                         snake.getLast().x,snake.getLast().y,null);
-             } else if (direction == Direction.WEST){
-                 canvas.drawBitmap(Bitmap.createScaledBitmap(tailWest, 50, 50, false),
-                         snake.getLast().x,snake.getLast().y,null);
-             } else if (direction == Direction.SOUTH){
-                 canvas.drawBitmap(Bitmap.createScaledBitmap(tailSouth, 50, 50, false),
-                         snake.getLast().x,snake.getLast().y,null);
-             } else if (direction == Direction.NORTH){
-                 canvas.drawBitmap(Bitmap.createScaledBitmap(tailNorth, 50, 50, false),
-                         snake.getLast().x,snake.getLast().y,null);
-             }*/
          }
 
 //---------------------------------- draw point --------------------------------------------------//
@@ -327,8 +302,22 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
 
         private void drawWalls(Canvas canvas){
             for(Rect brick : wall){
-                canvas.drawRect(brick,mPainter);
+               canvas.drawRect(brick,mPainter);
             }
+        }
+
+//--------------------------------------- Draw bonus ----------------------------------------------//
+
+        private void drawBonus(Canvas canvas){
+            if(newPoint){
+                point = new Point();
+                point = GenerateRandomPoint();
+                Log.d("Dim",point.x + " | " + canvasWidth + " == " + point.y + " | " + canvasHeight);
+                newPoint = false;
+            }
+            mPainter.setColor(Color.BLUE);
+            //canvas.drawRect(point.x,point.y,point.x+70,point.y+70,mPainter);
+            canvas.drawBitmap(Bitmap.createScaledBitmap(diamond, 50, 50, false),point.x,point.y,null);
         }
 
 /*==================================================================================================*/
@@ -336,37 +325,39 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
 /*==============================================Move Method=========================================*/
         private void move() {
 
-            if(direction != Direction.NO_DIRECTION){
-                if (snake.getFirst().y >= canvasHeight) {     //Down
-                    snake.getFirst().y = 0;
-                } else if (snake.getFirst().y <= 0) {     //Up
-                    snake.getFirst().y = canvasHeight;
-                }
+            if(!pauseGame){
+                if(direction != Direction.NO_DIRECTION) {
+                    if (snake.getFirst().y >= canvasHeight) {                                       //Down
+                        snake.getFirst().y = 0;
+                    } else if (snake.getFirst().y <= 0) {                                           //Up
+                        snake.getFirst().y = canvasHeight;
+                    }
 
-                if (snake.getFirst().x >= canvasWidth) {  //Right
-                    snake.getFirst().x = 0;
-                } else if (snake.getFirst().x <= 0) {                                           //Left
-                    snake.getFirst().x = canvasWidth;
-                }
+                    if (snake.getFirst().x >= canvasWidth) {                                        //Right
+                        snake.getFirst().x = 0;
+                    } else if (snake.getFirst().x <= 0) {                                           //Left
+                        snake.getFirst().x = canvasWidth;
+                    }
 
-                Point head = snake.peekFirst();
-                Point newPoint = head;
-                switch (direction) {                                                    //speed == 10
-                    case Direction.NORTH:
-                        newPoint = new Point(head.x, head.y - speed);
-                        break;
-                    case Direction.SOUTH:
-                        newPoint = new Point(head.x, head.y + speed);
-                        break;
-                    case Direction.WEST:
-                        newPoint = new Point(head.x - speed, head.y);
-                        break;
-                    case Direction.EAST:
-                        newPoint = new Point(head.x + speed, head.y);
-                        break;
+                    Point head = snake.peekFirst();
+                    Point newPoint = head;
+                    switch (direction) {                                                            //speed == 10
+                        case Direction.NORTH:
+                            newPoint = new Point(head.x, head.y - speed);
+                            break;
+                        case Direction.SOUTH:
+                            newPoint = new Point(head.x, head.y + speed);
+                            break;
+                        case Direction.WEST:
+                            newPoint = new Point(head.x - speed, head.y);
+                            break;
+                        case Direction.EAST:
+                            newPoint = new Point(head.x + speed, head.y);
+                            break;
+                    }
+                    snake.remove(snake.peekLast());
+                    snake.push(newPoint);
                 }
-                snake.remove(snake.peekLast());
-                snake.push(newPoint);
             }
         }
 
@@ -378,18 +369,33 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
             Rect snakeRect = new Rect(snake.getFirst().x, snake.getFirst().y,
                     snake.getFirst().x+50, snake.getFirst().y +50);
 
-            Rect pointRect = new Rect(point.x,point.y,point.x+50,point.y+50);
+            Rect pointRect;
+            if(bonusCounter == 5){
+                pointRect = new Rect(point.x , point.y, point.x + 70, point.y + 70);
+            } else {
+                pointRect = new Rect(point.x,point.y,point.x+50,point.y+50);
+            }
 
             if(snakeRect.intersect(pointRect)){
+
                 newPoint = true;
-                score += 1;
+
+                if(bonusCounter == 5){
+                    score += 5;
+                    bonusCounter = 0;
+                } else {
+                    score += 1;
+                    bonusCounter += 1;
+                }
+
                 if(autoSpeed == true) {
-                    speedCounter += 1;
+                    speedCounter += 1;;
                     if (speedCounter == 5) {
                         speedCounter = 0;
                         speed += 5;
                     }
                 }
+
                 Point last = snake.getLast();
                 for(int i = 0; i < 5; i++) {
                     snake.add(new Point(last.x, last.y));
@@ -439,26 +445,24 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
 
             mDrawingThread = new Thread(new Runnable() {
                 public void run() {
+                long previousFrameTime = System.currentTimeMillis();
+                Canvas canvas = null;
+                while (!Thread.currentThread().isInterrupted()) {
 
-                    long previousFrameTime = System.currentTimeMillis();
-                    Canvas canvas = null;
-
-                    while (!Thread.currentThread().isInterrupted()) {
-
-                        canvas = mSurfaceHolder.lockCanvas();
-                        if (null != canvas) {
-                            long currentTime = System.currentTimeMillis();
-                            double elapsedTime = currentTime - previousFrameTime;
-                            //Log.d(TAG, elapsedTime+"");
-                            moveStep = (int) (elapsedTime / 5) + 5;
-                            move();
-                            drawBubble(canvas);
-                            detectCollision();
-                            UpdateScore(score);
-                            previousFrameTime = currentTime;
-                            mSurfaceHolder.unlockCanvasAndPost(canvas);
-                        }
+                    canvas = mSurfaceHolder.lockCanvas();
+                    if (null != canvas) {
+                        long currentTime = System.currentTimeMillis();
+                        double elapsedTime = currentTime - previousFrameTime;
+                        //Log.d(TAG, elapsedTime+"");
+                        moveStep = (int) (elapsedTime / 5) + 5;
+                        move();
+                        drawBubble(canvas);
+                        detectCollision();
+                        UpdateScore(score);
+                        previousFrameTime = currentTime;
+                        mSurfaceHolder.unlockCanvasAndPost(canvas);
                     }
+                }
                 }
             });
             mDrawingThread.start();
