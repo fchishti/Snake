@@ -28,9 +28,10 @@ import android.widget.Toast;
 import java.util.LinkedList;
 import java.util.Random;
 
+import edu.uco.faaezcmakhdoomj.faaezcmakhdoomj.PauseDialogFragment.PauseDialogListener;
 import edu.uco.faaezcmakhdoomj.faaezcmakhdoomj.EndGameDialogFragment.EndGameDialogListener;
 
-public class GameActivity extends Activity implements EndGameDialogListener, NameDialogFragment.NameDialogListener{
+public class GameActivity extends Activity implements PauseDialogListener, EndGameDialogListener, NameDialogFragment.NameDialogListener {
 
     DatabaseHelper myDb;
     ImageButton topLeft, up, topRight, bottomLeft, down, bottomRight, pause;
@@ -112,6 +113,7 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
         pause.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
+                openPauseDialog();
             if (pauseGame){
                 pauseGame = false;
             }
@@ -120,6 +122,26 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
             }
             }
         });
+    }
+
+    public void openPauseDialog() {
+        PauseDialogFragment d = new PauseDialogFragment();
+        Bundle bundle = new Bundle();
+
+        d.setArguments(bundle);
+        d.show(getFragmentManager(), "GamePaused");
+    }
+    @Override
+    public void onPauseDialogPositiveClick() {
+        relativeLayout.removeView(bubbleView);
+        bubbleView = new BubbleView(getApplicationContext());
+        relativeLayout.addView(bubbleView);
+        pauseGame = false;
+    }
+
+    @Override
+    public void onPauseDialogNegativeClick() {
+        pauseGame = false;
     }
 
     public void openNameDialog(){
@@ -184,6 +206,8 @@ public class GameActivity extends Activity implements EndGameDialogListener, Nam
         else
             Log.d("DB","not insterted");
     }
+
+
 
     private class BubbleView extends SurfaceView implements
             SurfaceHolder.Callback {
